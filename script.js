@@ -32,7 +32,7 @@ function verificarEstadoJardin() {
         console.log("LocalStorage bloqueado.");
     }
 
-    // Forzamos el número del día real en la pantalla de inmediato
+    // Sincroniza el número del día en la pantalla de inmediato
     dayNumber.innerText = diaActual;
 
     // LÓGICA DÍA 1: Usuario completamente nuevo (No ha regado nunca)
@@ -89,6 +89,10 @@ function waterPlant() {
     const rosal = document.getElementById("rosal");
     const waterBtn = document.getElementById("water-btn");
     
+    // CONTROL ANTIDOBLE CLIC: Si ya está desactivado, frena la función inmediatamente
+    if (waterBtn.disabled) return; 
+    waterBtn.disabled = true;
+
     let diaActual = 1;
     let ultimoRiego = localStorage.getItem("rosal_v3_ultimo_riego");
 
@@ -97,13 +101,12 @@ function waterPlant() {
     } catch(e) {}
 
     rosal.classList.add("watering");
-    waterBtn.disabled = true;
 
     const ahora = new Date().getTime();
 
-    // Fuerza bruta: Si es el primer riego, pasa a Día 2 obligatorio. Si no, suma 1 normalmente.
+    // Incremento controlado de días
     if (!ultimoRiego) {
-        diaActual = 2;
+        diaActual = 2; 
     } else {
         diaActual++;
     }
@@ -113,6 +116,7 @@ function waterPlant() {
         localStorage.setItem("rosal_v3_dia_actual", diaActual);
     } catch(e) {}
 
+    // Espera a que termine la animación antes de refrescar la interfaz
     setTimeout(() => {
         rosal.classList.remove("watering");
         verificarEstadoJardin();
@@ -140,6 +144,9 @@ function resetPlant() {
         localStorage.removeItem("rosal_v3_dia_actual");
     } catch(e) {}
     
+    const waterBtn = document.getElementById("water-btn");
+    if (waterBtn) waterBtn.disabled = false;
+
     document.getElementById("water-btn").style.display = "inline-block";
     document.getElementById("reset-btn").style.display = "none";
     
