@@ -3,6 +3,18 @@
 const TIEMPO_DIA = 24 * 60 * 60 * 1000; 
 
 document.addEventListener("DOMContentLoaded", () => {
+    // CORRECCIÓN VITAL: Vinculamos los botones al iniciar la página, pase lo que pase
+    const waterBtn = document.getElementById("water-btn");
+    const resetBtn = document.getElementById("reset-btn");
+
+    if (waterBtn) {
+        waterBtn.addEventListener("click", waterPlant);
+    }
+    if (resetBtn) {
+        resetBtn.addEventListener("click", resetPlant);
+    }
+
+    // Ahora sí, revisamos cómo está el jardín
     verificarEstadoJardin();
 });
 
@@ -16,7 +28,7 @@ function verificarEstadoJardin() {
     let ultimoRiego = null;
     let diaActual = 1;
 
-    // PARCHE DE SEGURIDAD LOCAL: Si el navegador bloquea localStorage en file://, usamos valores por defecto
+    // PARCHE DE SEGURIDAD LOCAL
     try {
         ultimoRiego = localStorage.getItem("rosal_ultimo_riego");
         diaActual = parseInt(localStorage.getItem("rosal_dia_actual")) || 1;
@@ -24,17 +36,11 @@ function verificarEstadoJardin() {
         console.log("LocalStorage bloqueado localmente. Corriendo en modo demostración.");
     }
 
-    // LÓGICA AUTOMÁTICA DÍA 1
+    // LÓGICA AUTOMÁTICA DÍA 1 (Usuario completamente nuevo)
     if (!ultimoRiego) {
-        try {
-            const ahoramilisegundos = new Date().getTime();
-            localStorage.setItem("rosal_ultimo_riego", ahoramilisegundos);
-            localStorage.setItem("rosal_dia_actual", 1);
-        } catch(e) {}
-        
         configurarFaseVisual(1);
-        statusText.innerText = "¡Esqueje plantado con éxito! El suelo está perfectamente húmedo. Regresa mañana para su siguiente cuidado.";
-        waterBtn.disabled = true;
+        statusText.innerText = "¡Esqueje plantado con éxito! Tu rosal necesita agua para comenzar a crecer. ¡Dale su primer riego!";
+        waterBtn.disabled = false; // Permitimos que el usuario nuevo interactúe de inmediato
         dayNumber.innerText = 1;
         return;
     }
@@ -49,6 +55,8 @@ function verificarEstadoJardin() {
         rosal.className = "estado-debil";
         statusText.innerText = "La tierra está agrietada y el rosal se está doblando por deshidratación. ¡Riégalo ya!";
         waterBtn.disabled = false;
+        waterBtn.style.display = "inline-block";
+        resetBtn.style.display = "none";
         return;
     }
 
@@ -66,6 +74,8 @@ function verificarEstadoJardin() {
         configurarFaseVisual(diaActual);
         statusText.innerText = "El rosal absorbe los nutrientes correctamente. Vuelve mañana para hidratarlo.";
         waterBtn.disabled = true;
+        waterBtn.style.display = "inline-block";
+        resetBtn.style.display = "none";
         return;
     }
 
@@ -73,6 +83,8 @@ function verificarEstadoJardin() {
     configurarFaseVisual(diaActual);
     statusText.innerText = "El suelo se ha secado. Tu rosal necesita agua para continuar su desarrollo.";
     waterBtn.disabled = false;
+    waterBtn.style.display = "inline-block";
+    resetBtn.style.display = "none";
 }
 
 function waterPlant() {
@@ -89,7 +101,7 @@ function waterPlant() {
 
     const ahora = new Date().getTime();
     
-    // Avanzar de día
+    // Si era el primer riego real, avanzamos el día de forma correcta
     diaActual++;
 
     try {
@@ -103,7 +115,6 @@ function waterPlant() {
     }, 1500);
 }
 
-// ¡AQUÍ ESTÁ LA FUNCIÓN QUE SE HABÍA PERDIDO! Asegúrate de que se quede pegada al final
 function configurarFaseVisual(dia) {
     const rosal = document.getElementById("rosal");
     
