@@ -32,21 +32,32 @@ function verificarEstadoJardin() {
         console.log("LocalStorage bloqueado localmente. Corriendo en modo demostración.");
     }
 
-    // LÓGICA AUTOMÁTICA DÍA 1 (Usuario completamente nuevo)
+    // Sincronizamos el número del día en la pantalla de inmediato
+    dayNumber.innerText = diaActual;
+
+    // LÓGICA AUTOMÁTICA DÍA 1 (Usuario completamente nuevo sin regar)
     if (!ultimoRiego) {
         configurarFaseVisual(1);
         statusText.innerText = "¡Esqueje plantado con éxito! Tu rosal necesita agua para comenzar a crecer. ¡Dale su primer riego!";
         waterBtn.disabled = false;
-        dayNumber.innerText = 1;
+        waterBtn.style.display = "inline-block";
+        resetBtn.style.display = "none";
         return;
     }
 
     const ahora = new Date().getTime();
     const tiempoTranscurrido = ahora - parseInt(ultimoRiego);
 
-    dayNumber.innerText = diaActual;
+    // REGLA DE ABANDONO TOTAL (Muerto - Más de 3 días sin regar)
+    if (tiempoTranscurrido > (TIEMPO_DIA * 3)) {
+        rosal.className = "estado-muerto";
+        statusText.innerText = "Olvidaste cuidar tu jardín... El rosal se ha secado y muerto por completo.";
+        waterBtn.style.display = "none";
+        resetBtn.style.display = "inline-block";
+        return;
+    }
 
-    // REGLA DE ABANDONO INTERMEDIO (Marchitándose)
+    // REGLA DE ABANDONO INTERMEDIO (Marchitándose - Entre 1.5 y 3 días)
     if (tiempoTranscurrido > (TIEMPO_DIA * 1.5) && tiempoTranscurrido <= (TIEMPO_DIA * 3)) {
         rosal.className = "estado-debil";
         statusText.innerText = "La tierra está agrietada y el rosal se está doblando por deshidratación. ¡Riégalo ya!";
@@ -56,16 +67,7 @@ function verificarEstadoJardin() {
         return;
     }
 
-    // REGLA DE ABANDONO TOTAL (Muerto)
-    if (tiempoTranscurrido > (TIEMPO_DIA * 3)) {
-        rosal.className = "estado-muerto";
-        statusText.innerText = "Olvidaste cuidar tu jardín... El rosal se ha secado y muerto por completo.";
-        waterBtn.style.display = "none";
-        resetBtn.style.display = "inline-block";
-        return;
-    }
-
-    // REGLA DE ESPERA (Ya se regó hoy)
+    // REGLA DE ESPERA (Ya se regó hoy - El tiempo transcurrido es menor a un día)
     if (tiempoTranscurrido < TIEMPO_DIA) {
         configurarFaseVisual(diaActual);
         statusText.innerText = "El rosal absorbe los nutrientes correctamente. Vuelve mañana para hidratarlo.";
@@ -75,7 +77,7 @@ function verificarEstadoJardin() {
         return;
     }
 
-    // REGLA DISPONIBLE (Listo para regar)
+    // REGLA DISPONIBLE (Listo para regar de nuevo - Ya pasó el día de espera)
     configurarFaseVisual(diaActual);
     statusText.innerText = "El suelo se ha secado. Tu rosal necesita agua para continuar su desarrollo.";
     waterBtn.disabled = false;
@@ -96,6 +98,8 @@ function waterPlant() {
     waterBtn.disabled = true;
 
     const ahora = new Date().getTime();
+    
+    // Avanza limpiamente un día por cada riego exitoso
     diaActual++;
 
     try {
