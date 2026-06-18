@@ -1,9 +1,7 @@
 // CONFIGURACIÓN DEL TIEMPO (En milisegundos)
-// Cambia esto a (10 * 1000) si quieres probar el crecimiento rápido (10 segundos) en clase.
 const TIEMPO_DIA = 24 * 60 * 60 * 1000; 
 
 document.addEventListener("DOMContentLoaded", () => {
-    // CORRECCIÓN VITAL: Vinculamos los botones al iniciar la página, pase lo que pase
     const waterBtn = document.getElementById("water-btn");
     const resetBtn = document.getElementById("reset-btn");
 
@@ -14,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
         resetBtn.addEventListener("click", resetPlant);
     }
 
-    // Ahora sí, revisamos cómo está el jardín
     verificarEstadoJardin();
 });
 
@@ -28,10 +25,9 @@ function verificarEstadoJardin() {
     let ultimoRiego = null;
     let diaActual = 1;
 
-    // PARCHE DE SEGURIDAD LOCAL
     try {
-        ultimoRiego = localStorage.getItem("rosal_ultimo_riego");
-        diaActual = parseInt(localStorage.getItem("rosal_dia_actual")) || 1;
+        ultimoRiego = localStorage.getItem("rosal_v2_ultimo_riego");
+        diaActual = parseInt(localStorage.getItem("rosal_v2_dia_actual")) || 1;
     } catch (e) {
         console.log("LocalStorage bloqueado localmente. Corriendo en modo demostración.");
     }
@@ -40,7 +36,7 @@ function verificarEstadoJardin() {
     if (!ultimoRiego) {
         configurarFaseVisual(1);
         statusText.innerText = "¡Esqueje plantado con éxito! Tu rosal necesita agua para comenzar a crecer. ¡Dale su primer riego!";
-        waterBtn.disabled = false; // Permitimos que el usuario nuevo interactúe de inmediato
+        waterBtn.disabled = false;
         dayNumber.innerText = 1;
         return;
     }
@@ -93,20 +89,18 @@ function waterPlant() {
     let diaActual = 1;
 
     try {
-        diaActual = parseInt(localStorage.getItem("rosal_dia_actual")) || 1;
+        diaActual = parseInt(localStorage.getItem("rosal_v2_dia_actual")) || 1;
     } catch(e) {}
 
     rosal.classList.add("watering");
     waterBtn.disabled = true;
 
     const ahora = new Date().getTime();
-    
-    // Si era el primer riego real, avanzamos el día de forma correcta
     diaActual++;
 
     try {
-        localStorage.setItem("rosal_ultimo_riego", ahora);
-        localStorage.setItem("rosal_dia_actual", diaActual);
+        localStorage.setItem("rosal_v2_ultimo_riego", ahora);
+        localStorage.setItem("rosal_v2_dia_actual", diaActual);
     } catch(e) {}
 
     setTimeout(() => {
@@ -132,8 +126,8 @@ function configurarFaseVisual(dia) {
 
 function resetPlant() {
     try {
-        localStorage.removeItem("rosal_ultimo_riego");
-        localStorage.removeItem("rosal_dia_actual");
+        localStorage.removeItem("rosal_v2_ultimo_riego");
+        localStorage.removeItem("rosal_v2_dia_actual");
     } catch(e) {}
     
     document.getElementById("water-btn").style.display = "inline-block";
