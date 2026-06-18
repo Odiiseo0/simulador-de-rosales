@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jardín Autónomo - Simulador de Rosal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="garden-container">
+        <h2 class="streak-counter">Rosal: Día <span id="day-number">1</span></h2>
+        
+        <div class="canvas">
+            <div id="rosal" class="fase-1">
+                <div class="rosa rosa-centro"></div>
+                <div class="rosa rosa-izquierda"></div>
+                <div class="rosa rosa-derecha"></div>
+
+                <div class="tallo-principal">
+                    <div class="rama izquierda"></div>
+                    <div class="rama derecha"></div>
+                </div>
+            </div>
+
+            <div class="maceta"></div>
+        </div>
+        
+        <p id="status-text" class="status-message">Cargando jardín...</p>
+
+        <button id="water-btn" onclick="waterPlant()" class="btn-garden">Regar Rosal</button>
+        <button id="reset-btn" onclick="resetPlant()" class="btn-reset" style="display: none;">Plantar nuevo esqueje</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
