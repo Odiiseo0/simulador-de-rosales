@@ -26,16 +26,16 @@ function verificarEstadoJardin() {
     let diaActual = 1;
 
     try {
-        ultimoRiego = localStorage.getItem("rosal_v2_ultimo_riego");
-        diaActual = parseInt(localStorage.getItem("rosal_v2_dia_actual")) || 1;
+        ultimoRiego = localStorage.getItem("rosal_v3_ultimo_riego");
+        diaActual = parseInt(localStorage.getItem("rosal_v3_dia_actual")) || 1;
     } catch (e) {
-        console.log("LocalStorage bloqueado localmente. Corriendo en modo demostración.");
+        console.log("LocalStorage bloqueado.");
     }
 
-    // Sincronizamos el número del día en la pantalla de inmediato
+    // Forzamos el número del día real en la pantalla de inmediato
     dayNumber.innerText = diaActual;
 
-    // LÓGICA AUTOMÁTICA DÍA 1 (Usuario completamente nuevo sin regar)
+    // LÓGICA DÍA 1: Usuario completamente nuevo (No ha regado nunca)
     if (!ultimoRiego) {
         configurarFaseVisual(1);
         statusText.innerText = "¡Esqueje plantado con éxito! Tu rosal necesita agua para comenzar a crecer. ¡Dale su primer riego!";
@@ -48,7 +48,7 @@ function verificarEstadoJardin() {
     const ahora = new Date().getTime();
     const tiempoTranscurrido = ahora - parseInt(ultimoRiego);
 
-    // REGLA DE ABANDONO TOTAL (Muerto - Más de 3 días sin regar)
+    // REGLA DE ABANDONO TOTAL (Muerto - Más de 3 días)
     if (tiempoTranscurrido > (TIEMPO_DIA * 3)) {
         rosal.className = "estado-muerto";
         statusText.innerText = "Olvidaste cuidar tu jardín... El rosal se ha secado y muerto por completo.";
@@ -57,7 +57,7 @@ function verificarEstadoJardin() {
         return;
     }
 
-    // REGLA DE ABANDONO INTERMEDIO (Marchitándose - Entre 1.5 y 3 días)
+    // REGLA DE ABANDONO INTERMEDIO (Marchitándose)
     if (tiempoTranscurrido > (TIEMPO_DIA * 1.5) && tiempoTranscurrido <= (TIEMPO_DIA * 3)) {
         rosal.className = "estado-debil";
         statusText.innerText = "La tierra está agrietada y el rosal se está doblando por deshidratación. ¡Riégalo ya!";
@@ -67,7 +67,7 @@ function verificarEstadoJardin() {
         return;
     }
 
-    // REGLA DE ESPERA (Ya se regó hoy - El tiempo transcurrido es menor a un día)
+    // REGLA DE ESPERA (Ya se regó hoy)
     if (tiempoTranscurrido < TIEMPO_DIA) {
         configurarFaseVisual(diaActual);
         statusText.innerText = "El rosal absorbe los nutrientes correctamente. Vuelve mañana para hidratarlo.";
@@ -77,7 +77,7 @@ function verificarEstadoJardin() {
         return;
     }
 
-    // REGLA DISPONIBLE (Listo para regar de nuevo - Ya pasó el día de espera)
+    // REGLA DISPONIBLE (Listo para regar)
     configurarFaseVisual(diaActual);
     statusText.innerText = "El suelo se ha secado. Tu rosal necesita agua para continuar su desarrollo.";
     waterBtn.disabled = false;
@@ -88,23 +88,29 @@ function verificarEstadoJardin() {
 function waterPlant() {
     const rosal = document.getElementById("rosal");
     const waterBtn = document.getElementById("water-btn");
+    
     let diaActual = 1;
+    let ultimoRiego = localStorage.getItem("rosal_v3_ultimo_riego");
 
     try {
-        diaActual = parseInt(localStorage.getItem("rosal_v2_dia_actual")) || 1;
+        diaActual = parseInt(localStorage.getItem("rosal_v3_dia_actual")) || 1;
     } catch(e) {}
 
     rosal.classList.add("watering");
     waterBtn.disabled = true;
 
     const ahora = new Date().getTime();
-    
-    // Avanza limpiamente un día por cada riego exitoso
-    diaActual++;
+
+    // Fuerza bruta: Si es el primer riego, pasa a Día 2 obligatorio. Si no, suma 1 normalmente.
+    if (!ultimoRiego) {
+        diaActual = 2;
+    } else {
+        diaActual++;
+    }
 
     try {
-        localStorage.setItem("rosal_v2_ultimo_riego", ahora);
-        localStorage.setItem("rosal_v2_dia_actual", diaActual);
+        localStorage.setItem("rosal_v3_ultimo_riego", ahora);
+        localStorage.setItem("rosal_v3_dia_actual", diaActual);
     } catch(e) {}
 
     setTimeout(() => {
@@ -118,9 +124,9 @@ function configurarFaseVisual(dia) {
     
     if (dia === 1) {
         rosal.className = "fase-1";
-    } else if (dia <= 3) {
+    } else if (dia === 2) {
         rosal.className = "fase-2";
-    } else if (dia <= 6) {
+    } else if (dia === 3) {
         rosal.className = "fase-3";
     } else {
         rosal.className = "fase-4";
@@ -130,8 +136,8 @@ function configurarFaseVisual(dia) {
 
 function resetPlant() {
     try {
-        localStorage.removeItem("rosal_v2_ultimo_riego");
-        localStorage.removeItem("rosal_v2_dia_actual");
+        localStorage.removeItem("rosal_v3_ultimo_riego");
+        localStorage.removeItem("rosal_v3_dia_actual");
     } catch(e) {}
     
     document.getElementById("water-btn").style.display = "inline-block";
